@@ -1,14 +1,21 @@
 <?php
 namespace Laraxedro\Oauth;
 
+use Laraxedro\Entities\OauthAccessToken;
+use Laraxedro\Entities\OauthClient;
+use Laraxedro\Entities\OauthRefreshToken;
+use Laraxedro\Oauth\Entities\AccessToken;
+use Laraxedro\Oauth\Entities\RefreshToken;
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
+use League\OAuth2\Server\Entities\RefreshTokenEntityInterface;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
 use League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface;
 use League\OAuth2\Server\Repositories\ClientRepositoryInterface;
+use League\OAuth2\Server\Repositories\RefreshTokenRepositoryInterface;
 use League\OAuth2\Server\Repositories\ScopeRepositoryInterface;
 
-class OauthService implements ClientRepositoryInterface, AccessTokenRepositoryInterface, ScopeRepositoryInterface
+class OauthRepository implements ClientRepositoryInterface, AccessTokenRepositoryInterface, ScopeRepositoryInterface, RefreshTokenRepositoryInterface
 {
     /**
      * Create a new access token
@@ -21,17 +28,20 @@ class OauthService implements ClientRepositoryInterface, AccessTokenRepositoryIn
      */
     public function getNewToken(ClientEntityInterface $clientEntity, array $scopes, $userIdentifier = null)
     {
-        return new AccessToken();
+        $accessToken = new OauthAccessToken();
+        $accessToken->user_id = $userIdentifier;
+
+        return $accessToken;
     }
 
     /**
      * Persists a new access token to permanent storage.
      *
-     * @param AccessTokenEntityInterface $accessTokenEntity
+     * @param AccessTokenEntityInterface|OauthAccessToken $accessTokenEntity
      */
     public function persistNewAccessToken(AccessTokenEntityInterface $accessTokenEntity)
     {
-        // TODO: Implement persistNewAccessToken() method.
+        $accessTokenEntity->save();
     }
 
     /**
@@ -41,7 +51,7 @@ class OauthService implements ClientRepositoryInterface, AccessTokenRepositoryIn
      */
     public function revokeAccessToken($tokenId)
     {
-        // TODO: Implement revokeAccessToken() method.
+
     }
 
     /**
@@ -69,7 +79,15 @@ class OauthService implements ClientRepositoryInterface, AccessTokenRepositoryIn
      */
     public function getClientEntity($clientIdentifier, $grantType, $clientSecret = null, $mustValidateSecret = true)
     {
-        // TODO: Implement getClientEntity() method.
+        $client = OauthClient::find($clientIdentifier);
+
+        if (!$client)
+            throw new \Exception('Invalid Client');
+
+        if($mustValidateSecret && $client->secret !== $clientSecret)
+            throw new \Exception('Client invalid secret');
+
+        return $client;
     }
 
     /**
@@ -102,6 +120,52 @@ class OauthService implements ClientRepositoryInterface, AccessTokenRepositoryIn
         $userIdentifier = null
     )
     {
-        // TODO: Implement finalizeScopes() method.
+        return array();
+    }
+
+    /**
+     * Creates a new refresh token
+     *
+     * @return RefreshTokenEntityInterface
+     */
+    public function getNewRefreshToken()
+    {
+        return new OauthRefreshToken();
+    }
+
+    /**
+     * Create a new refresh token_name.
+     *
+     * @param RefreshTokenEntityInterface|OauthRefreshToken $refreshTokenEntity
+     */
+    public function persistNewRefreshToken(RefreshTokenEntityInterface $refreshTokenEntity)
+    {
+        $refreshTokenEntity->save();
+    }
+
+    /**
+     * Revoke the refresh token.
+     *
+     * @param string $tokenId
+     */
+    public function revokeRefreshToken($tokenId)
+    {
+        $oauthRefreshToken = OauthRefreshToken::find($tokenId);
+        $oauthRefreshToken->revoked = 1;
+        $oauthRefreshToken->save();
+    }
+
+    /**
+     * Check if the refresh token has been revoked.
+     *
+     * @param string $tokenId
+     *
+     * @return bool Return true if this token has been revoked
+     */
+    public function isRefreshTokenRevoked($tokenId)
+    {
+        $oauthRefreshToken = OauthRefreshToken::find($tokenId);
+
+        return $oauthRefreshToken->revoked == 1;
     }
 }

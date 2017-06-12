@@ -1,24 +1,18 @@
 <?php
-namespace Laraxedro\Oauth;
+namespace Laraxedro\Entities;
 
+use Laraquent\Base;
 use League\OAuth2\Server\CryptKey;
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
+use League\OAuth2\Server\Entities\Traits\AccessTokenTrait;
 
-class AccessToken implements AccessTokenEntityInterface
+class OauthAccessToken extends Base implements AccessTokenEntityInterface
 {
-    /**
-     * Generate a JWT from the access token
-     *
-     * @param CryptKey $privateKey
-     *
-     * @return string
-     */
-    public function convertToJWT(CryptKey $privateKey)
-    {
-        // TODO: Implement convertToJWT() method.
-    }
+    use AccessTokenTrait;
+
+    protected $table = 'oauth_access_token';
 
     /**
      * Get the token's identifier.
@@ -27,7 +21,7 @@ class AccessToken implements AccessTokenEntityInterface
      */
     public function getIdentifier()
     {
-        // TODO: Implement getIdentifier() method.
+        return $this->id;
     }
 
     /**
@@ -37,7 +31,7 @@ class AccessToken implements AccessTokenEntityInterface
      */
     public function setIdentifier($identifier)
     {
-        // TODO: Implement setIdentifier() method.
+        $this->id = $identifier;
     }
 
     /**
@@ -47,7 +41,7 @@ class AccessToken implements AccessTokenEntityInterface
      */
     public function getExpiryDateTime()
     {
-        // TODO: Implement getExpiryDateTime() method.
+        return $this->expire_time;
     }
 
     /**
@@ -57,7 +51,7 @@ class AccessToken implements AccessTokenEntityInterface
      */
     public function setExpiryDateTime(\DateTime $dateTime)
     {
-        // TODO: Implement setExpiryDateTime() method.
+        $this->expire_time = $dateTime;
     }
 
     /**
@@ -67,7 +61,7 @@ class AccessToken implements AccessTokenEntityInterface
      */
     public function setUserIdentifier($identifier)
     {
-        // TODO: Implement setUserIdentifier() method.
+        $this->user_id = $identifier;
     }
 
     /**
@@ -77,7 +71,7 @@ class AccessToken implements AccessTokenEntityInterface
      */
     public function getUserIdentifier()
     {
-        // TODO: Implement getUserIdentifier() method.
+        return $this->user_id;
     }
 
     /**
@@ -87,7 +81,7 @@ class AccessToken implements AccessTokenEntityInterface
      */
     public function getClient()
     {
-        // TODO: Implement getClient() method.
+        return OauthClient::find($this->client_id);
     }
 
     /**
@@ -97,7 +91,7 @@ class AccessToken implements AccessTokenEntityInterface
      */
     public function setClient(ClientEntityInterface $client)
     {
-        // TODO: Implement setClient() method.
+        $this->client_id = $client->getIdentifier();
     }
 
     /**
@@ -117,6 +111,6 @@ class AccessToken implements AccessTokenEntityInterface
      */
     public function getScopes()
     {
-        // TODO: Implement getScopes() method.
+        return array();
     }
 }
